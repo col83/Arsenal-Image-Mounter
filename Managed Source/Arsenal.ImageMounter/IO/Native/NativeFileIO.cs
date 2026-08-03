@@ -2327,26 +2327,21 @@ Currently, the following application has files open on this volume:
     {
         try
         {
-            if (handle.SessionId == 0)
+            if (handle.SessionId != 0)
             {
-                return $"'{handle.ProcessName}' (id = {handle.HandleTableEntry.ProcessId})";
-            }
+                using var ps = Process.GetProcessById(handle.HandleTableEntry.ProcessId);
 
-            using var ps = Process.GetProcessById(handle.HandleTableEntry.ProcessId);
-
-            if (string.IsNullOrWhiteSpace(ps.MainWindowTitle))
-            {
-                return $"'{handle.ProcessName}' (id = {handle.HandleTableEntry.ProcessId})";
-            }
-            else
-            {
-                return $"'{ps.MainWindowTitle}' (id = {handle.HandleTableEntry.ProcessId})";
+                if (ps.MainWindowTitle is { Length: > 0 } mainWindowTitle)
+                {
+                    return $"'{mainWindowTitle}' (id = {handle.HandleTableEntry.ProcessId})";
+                }
             }
         }
         catch
         {
-            return $"'{handle.ProcessName}' (id = {handle.HandleTableEntry.ProcessId})";
         }
+
+        return $"'{handle.ProcessName}' (id = {handle.HandleTableEntry.ProcessId})";
     }
 
     [SupportedOSPlatform(NativeConstants.SUPPORTED_WINDOWS_PLATFORM)]
